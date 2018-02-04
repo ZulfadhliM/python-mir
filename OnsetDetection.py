@@ -33,34 +33,30 @@ class OnsetDetection(object):
 
 		self.detectionType = detectionType
 
+	@staticmethod
+	def highFrequencyContent(currentMag, freqSample, fftSize):
+		if (freqSample <= fftSize/2):
+			hfc = pow(currentMag, 2) * freqSample
+		else:
+			hfc = pow(currentMag, 2) * (fftSize - freqSample)
+		return hfc
 
-	def spectralFlux(self):
-		result = 0
+	@staticmethod
+	def spectralFlux(currentMag, prevMag):
+		if (currentMag > prevMag):
+			sf = currentMag - prevMag
+		else:
+			sf = 0
+		return sf
 
-		for i in range(self.fftSize):
-			currentMag = np.abs(self.currentFrameFFT[i])
-			prevMag = np.abs(self.prevFrameFFT[i])
-			if (currentMag > prevMag):
-				result += currentMag - prevMag
 
-		result /= self.fftSize
-		return result
+	@staticmethod
+	def complexDomain(currentMag, prevMag, currentPhase, targetPhase):
+		cd = np.sqrt(pow(prevMag, 2) + pow(currentMag, 2) - 2 * prevMag * currentMag * np.cos(currentPhase - targetPhase))
+		return cd
 
-	def highFrequencyContent(self):
-		result = 0
 
-		for i in range(self.fftSize):
-			currentMag = np.abs(self.currentFrameFFT[i])
-
-			if (i <= self.fftSize/2):
-				result += pow(currentMag, 2) * i
-			else:
-				result += pow(currentMag, 2) * (self.fftSize - i)
-
-		result /= self.fftSize
-		return result
-
-	def complexDomain(self):
+	def processFrame(self):
 		result = 0
 
 		for i in range(self.fftSize):
@@ -70,10 +66,16 @@ class OnsetDetection(object):
 			prevPhase = np.angle(self.prevFrameFFT[i])
 			prevPrevPhase = np.angle(self.prevPrevFrameFFT[i])
 			targetPhase = 2 * prevPhase - prevPrevPhase
-			result += np.sqrt(pow(prevMag, 2) + pow(currentMag, 2) - 2 * prevMag * currentMag * np.cos(currentPhase - targetPhase))
+
+			if (self.detectionType == "Complex Domain"):
+				result += self.complexDomain(currentMag, prevMag, currentPhase, targetPhase)
+			elif (self.detectionType == "Spectral Flux"):
+				result += self.spectralFlux(currentMag, prevMag)
+			elif (self.detectionType == "High Frequency Content"):
+				result += self.highFrequencyContent(currentMag, i, self.fftSize)
 
 		result /= self.fftSize
-		return result
+		return result			
 
 	def process(self):
 
@@ -84,12 +86,10 @@ class OnsetDetection(object):
 			currentFrame = np.append(currentFrame, np.zeros(self.fftSize)) # zero pad
 			self.currentFrameFFT = fft(currentFrame, self.fftSize)
 
-			if (self.detectionType == "Complex Domain"):
-				self.detectionFunc[i] = self.complexDomain()
-			elif (self.detectionType == "spectralFlux"):
-				self.detectionType[i] = self.spectralFlux()
-				
+			self.detectionFunc[i] = self.processFrame()
+
 			self.prevPrevFrameFFT = self.prevFrameFFT
 			self.prevFrameFFT = self.currentFrameFFT
 
 		return self.detectionFunc
+
