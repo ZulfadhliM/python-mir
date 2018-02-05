@@ -1,11 +1,12 @@
 import numpy as np
+from PeakPicking import PeakPicking
 from scipy.fftpack import fft
 from scipy.signal import medfilt
 
 class OnsetDetection(object):
 	"""
-	Onset Detection Algorithm that finds the onset times of an audio file. There are three types
-	of onset detection algorithms which are : 1) Spectral Flux, 2) High Frequency Content and 3) Complex Domain
+	Onset Detection Algorithm that finds the onset times (in seconds) of an audio file. There are three types
+	of onset detection algorithms which are : "Spectral Flux", "High Frequency Content", "Complex Domain" and "Rectified Complex Domain"
 
 	Attributes:
 	inputSignal: The audio file
@@ -15,6 +16,8 @@ class OnsetDetection(object):
 	fftTime: Length of FFT size in seconds
 	threshold: The threshold for pick picking algorithm
 	detectionFunc: The output of the onset detection function
+	postProcessingType: Apply post processing techniques to the detection function. There are three types of
+						post processing techniques which are: "Whole", "Normalise", "Standardise" and "None"
 
 	"""
 
@@ -59,6 +62,14 @@ class OnsetDetection(object):
 		cd = np.sqrt(pow(prevMag, 2) + pow(currentMag, 2) - 2 * prevMag * currentMag * np.cos(currentPhase - targetPhase))
 		return cd
 
+	@staticmethod
+	def rectifiedComplexDomain(currentMag, prevMag, currentPhase, targetPhase):
+		if (currentMag >= prevMag):
+			rcd = np.sqrt(pow(prevMag, 2) + pow(currentMag, 2) - 2 * prevMag * currentMag * np.cos(currentPhase - targetPhase))
+		else:
+			rcd = 0
+
+		return rcd
 
 	def processFrame(self):
 
@@ -82,12 +93,15 @@ class OnsetDetection(object):
 
 			if (self.detectionType == "Complex Domain"):
 				result += self.complexDomain(currentMag, prevMag, currentPhase, targetPhase)
+			elif (self.detectionType == "Rectified Complex Domain"):
+				result += self.rectifiedComplexDomain(currentMag, prevMag, currentPhase, targetPhase)
 			elif (self.detectionType == "Spectral Flux"):
 				result += self.spectralFlux(currentMag, prevMag)
 			elif (self.detectionType == "High Frequency Content"):
 				result += self.highFrequencyContent(currentMag, i, self.fftSize)
 
 		result /= self.fftSize
+		
 		return result			
 
 	def process(self):
@@ -105,18 +119,33 @@ class OnsetDetection(object):
 			self.prevPrevFrameFFT = self.prevFrameFFT
 			self.prevFrameFFT = self.currentFrameFFT
 
-		return self.detectionFunc
-
 	def postProcessing(self):
 
 		# Do some post processing techniques such as normalising, smoothing and DC removal
 		# Later, we could add constraint to avoid "double detection" (e.g. peaks that are close to each other)
 
+		if (self.postProcessingType == "Whole") or (self.postProcessingType == "Normalise"):
+			self.detectionFunc /= medfilt(self.detectionFunc, 11) # Normalise with median filtered function
+
+		if (self.postProcessingType == "Whole") or (self.postProcessingType == "Standardise"):
+			self.detectionFunc = (self.detectionFunc - np.mean(self.detectionFunc)) / np.std(self.detectionFunc) # Standardise to zero mean
+
+	def getOnsetTimes(self):
+
+		# Calculate the onset detection function for each frame
 		self.process()
 
-		self.detectionFunc /= medfilt(self.detectionFunc, 11) # Normalise with median filtered function
+		# Do post processing on onset detection function
+		self.postProcessing()
 
-		self.detectionFunc = (self.detectionFunc - np.mean(self.detectionFunc)) / np.std(self.detectionFunc) # Standardise to zero mean
+		# initialise peak picking method with threshold
+		peakPicking = PeakPicking(self.detectionFunc, self.threshold)
 
-		return self.detectionFunc
+		# get the locations and amplitudes of the peaks
+		[locations, amplitudes] = peakPicking.getPeaks()
+
+		# convert samples to seconds
+		onsetTimes = np.array(locations) * self.hopSize / self.fs
+
+		return onsetTimes
 

@@ -6,8 +6,7 @@ import numpy as np
 
 [inputSignal, fs] = soundfile.read('PianoDebussy.wav')
 
-onsetDetection = OnsetDetection(inputSignal, detectionType = "Spectral Flux")
-odf = onsetDetection.postProcessing()
+onsetDetection = OnsetDetection(inputSignal, detectionType = "Complex Domain")
+onsetTimes = onsetDetection.getOnsetTimes()
 
-plt.plot(odf)
-plt.show()
+print(onsetTimes)
