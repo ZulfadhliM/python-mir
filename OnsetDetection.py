@@ -18,6 +18,7 @@ class OnsetDetection(object):
 	detectionFunc: The output of the onset detection function
 	postProcessingType: Apply post processing techniques to the detection function. There are three types of
 						post processing techniques which are: "Whole", "Normalise", "Standardise" and "None"
+	timeStamp: An array of the time stamps for each frame
 
 	"""
 
@@ -69,7 +70,6 @@ class OnsetDetection(object):
 			rcd = np.sqrt(pow(prevMag, 2) + pow(currentMag, 2) - 2 * prevMag * currentMag * np.cos(currentPhase - targetPhase))
 		else:
 			rcd = 0
-
 		return rcd
 
 	def processFrame(self):

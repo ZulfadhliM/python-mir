@@ -13,6 +13,8 @@ The main.py file shows an example of using the MIR techniques. The audio signal 
 
 ![MIR Result](https://github.com/ZulfadhliM/python-mir/blob/master/screenshots/result.png)
 
+The top graph shows the signal (right channel only) of the opening guitar riff played by George Harrison. The middle graph shows the onset detection function that is calculated using Rectified Complex Domain method (blue line) and the estimated onset times (dotted red lines). The bottom graph shows the estimated fundamental frequencies over time.
+
 ## Dependencies
 
 * NumPy
@@ -20,7 +22,7 @@ The main.py file shows an example of using the MIR techniques. The audio signal 
 * matplotlib
 * Soundfile (optional)
 
-## Future work
+## Future Work
 
-Will add more MIR techniques e.g. spectral peaks extraction, inharmonicity coefficient estimation, music segmentation and etc.
+Will add more MIR techniques e.g. polyphonic frequency estimation, spectral peaks extraction, inharmonicity coefficient estimation, music segmentation and etc.
 

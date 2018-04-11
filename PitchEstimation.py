@@ -2,7 +2,20 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 class PitchEstimation(object):
+	"""
+	Pitch Estimation Algorithm that finds the pitches (in Hz) of an audio file. So far, there is only one type
+	of pitch estimation algorithm, which is the YIN method that works well with monophonic signals.
 
+	Attributes:
+	inputSignal: The audio file
+	fs: Sampling rate (default = 44100 Hz)
+	windowSize: Length of window size in seconds (default = 80ms)
+	hopTime: Length of overlapping window in seconds (default = 10ms)
+	threshold: The threshold for voice or unvoiced decision (default = 0.2)
+	minFreq: The minimum frequency for the search range (default = 65 Hz, low C note)
+	timeStamp: An array of the time stamps for each frame
+
+	"""
 	def __init__(self, inputSignal, fs = 44100, windowSize = 0.08, hopTime = 0.01, minFreq = 65, threshold = 0.2):
 
 		self.fs = fs
