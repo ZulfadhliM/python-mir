@@ -1,5 +1,4 @@
 import soundfile
-import sys
 from matplotlib import pyplot as plt
 from OnsetDetection import OnsetDetection
 from PitchEstimation import PitchEstimation
@@ -15,8 +14,6 @@ onsetTimes = onsetDetection.getOnsetTimes()
 
 pitchEstimation = PitchEstimation(inputSignal)
 pitches = pitchEstimation.getPitches()
-
-print(onsetDetection.timeStamp[0:2], onsetDetection.timeStamp[-1], pitchEstimation.timeStamp[0:2])
 
 plt.figure(1)
 plt.subplot(3, 1, 1)

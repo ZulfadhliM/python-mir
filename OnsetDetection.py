@@ -148,7 +148,5 @@ class OnsetDetection(object):
 		# convert samples to seconds
 		onsetTimes = np.array(locations) * self.hopSize / self.fs
 
-		print(locations)
-
 		return onsetTimes
 
