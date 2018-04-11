@@ -10,18 +10,18 @@ class OnsetDetection(object):
 
 	Attributes:
 	inputSignal: The audio file
-	fs: Sampling rate
-	detectionType: The algorithm to calculate the onset detection function
-	hopTime: Length of overlapping window in seconds
-	fftTime: Length of FFT size in seconds
-	threshold: The threshold for pick picking algorithm
+	fs: Sampling rate (default = 44100 Hz)
+	detectionType: The algorithm to calculate the onset detection function (default = Rectified Complex Domain)
+	hopTime: Length of overlapping window in seconds (default = 10ms)
+	fftTime: Length of FFT size in seconds (default = 40 ms)
+	threshold: The threshold for pick picking algorithm (default = 1.25)
 	detectionFunc: The output of the onset detection function
 	postProcessingType: Apply post processing techniques to the detection function. There are three types of
 						post processing techniques which are: "Whole", "Normalise", "Standardise" and "None"
 
 	"""
 
-	def __init__(self, inputSignal, fs = 44100, hopTime = 0.01, fftTime = 0.04, threshold = 1.25, detectionType = "Complex Domain", postProcessingType = "Whole"):
+	def __init__(self, inputSignal, fs = 44100, hopTime = 0.01, fftTime = 0.04, threshold = 1.25, detectionType = "Rectified Complex Domain", postProcessingType = "Whole"):
 		self.inputSignal = inputSignal
 		self.fs = fs
 		self.hopTime = hopTime
@@ -37,6 +37,7 @@ class OnsetDetection(object):
 		self.prevPrevFrameFFT = np.zeros(self.fftSize)
 		self.detectionFunc = np.zeros(self.frameCount)
 
+		self.timeStamp = np.linspace(0, (self.frameCount - 1) * self.hopSize / self.fs, self.frameCount)
 		self.detectionType = detectionType
 		self.postProcessingType = postProcessingType
 
@@ -146,6 +147,8 @@ class OnsetDetection(object):
 
 		# convert samples to seconds
 		onsetTimes = np.array(locations) * self.hopSize / self.fs
+
+		print(locations)
 
 		return onsetTimes
 
