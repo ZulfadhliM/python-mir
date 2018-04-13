@@ -9,7 +9,7 @@ Some state-of-the-art music information retrieval techniques written in Python.
 
 ## Getting Started
 
-The main.py file shows an example of using the MIR techniques. The audio signal that is under analysis is the guitar riff from the track "Day Tripper" written by The Beatles in "1" album. The graph below shows the results:
+The `main.py` file shows an example of using the MIR techniques. The audio signal that is under analysis is the guitar riff from the track "Day Tripper" written by The Beatles in "1" album. The graph below shows the results:
 
 ![MIR Result](https://github.com/ZulfadhliM/python-mir/blob/master/screenshots/result.png)
 
